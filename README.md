@@ -1,2 +1,3 @@
 - Tema 1
+- Tema 2
 - Clasele folosite si actiunile sistemului pentru proiect sunt intr-un README.md din folderul Proiect
