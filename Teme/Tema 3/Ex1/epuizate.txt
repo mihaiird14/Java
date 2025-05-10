@@ -1,0 +1,3 @@
+Produsul 'Paine' are pretul 3,00, iar nr de bucati in stoc este 0}
+Produsul 'Zahar' are pretul 5,50, iar nr de bucati in stoc este 0}
+Produsul 'Sapun' are pretul 6,00, iar nr de bucati in stoc este 0}
