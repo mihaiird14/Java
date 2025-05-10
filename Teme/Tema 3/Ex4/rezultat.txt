@@ -1,0 +1,40 @@
+Persoane filtrate și sortate:
+Persoana 1;35;Bucuresti
+Persoana 3;45;Baia Mare
+Persoana 5;55;Bucuresti
+Persoana 7;40;Botosani
+Persoana 8;31;Bacau
+Persoana 9;50;Bucuresti
+
+Grupare pe oraș:
+Baia Mare:
+  Persoana 3;45;Baia Mare
+Botosani:
+  Persoana 7;40;Botosani
+Bucuresti:
+  Persoana 1;35;Bucuresti
+  Persoana 5;55;Bucuresti
+  Persoana 9;50;Bucuresti
+Bacau:
+  Persoana 8;31;Bacau
+Arad:
+  Persoana 10;27;Arad
+Constanta:
+  Persoana 6;19;Constanta
+Brasov:
+  Persoana 2;28;Brasov
+Cluj:
+  Persoana 4;22;Cluj
+
+Media de vârstă per oraș:
+Baia Mare -> media: 45.0
+Botosani -> media: 40.0
+Bucuresti -> media: 46.666666666666664
+Bacau -> media: 31.0
+Arad -> media: 27.0
+Constanta -> media: 19.0
+Brasov -> media: 28.0
+Cluj -> media: 22.0
+
+Persoana cu vârsta maximă:
+Persoana 5;55;Bucuresti
