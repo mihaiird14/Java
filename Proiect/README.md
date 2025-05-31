@@ -1,25 +1,25 @@
 ETAPA 2
 
 Player
-  - insert (cand un player nou isi face cont)
-  - read (cand un player existent se conecteaza)
-  - update (la finalul jocului, la scor)
-  - delete (user-ul isi sterge contul)
+  - insert (cand un player nou isi face cont)  //din clasa Meniu
+  - read (cand un player existent se conecteaza) //din clasa Meniu
+  - update (la finalul jocului, la scor)  //din clasa Joc
+  - delete (user-ul isi sterge contul)  //din clasa Meniu
     
-Scoreboard
+Scoreboard //toate din clasa Scoreboard
   - delete (se sterge scoreboard-ul anterior)
   - insert (se insereaza datele noi)
   - read (se afiseaza)
     
-Runda
+Runda  // toate din clasa Runda
   - insert (cand incepe prima runda)
   - update (cand se schimba tipul rundei)
   - read (la fiecare runda se afiseaza numele)
   - delete (la finalul jocului este sters din baza de date)
     
 Optiuni
-  - insert (cand alege o optiune din meniu)
-  - delete (cand isi sterge contul, se sterg si optiunile inregistrate)
+  - insert (cand alege o optiune din meniu)  //din clasa Optiuni
+  - delete (cand isi sterge contul, se sterg si optiunile inregistrate)  //din clasa Meniu
 
 
 
