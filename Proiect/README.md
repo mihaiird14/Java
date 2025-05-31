@@ -5,15 +5,18 @@ Player
   - read (cand un player existent se conecteaza)
   - update (la finalul jocului, la scor)
   - delete (user-ul isi sterge contul)
+    
 Scoreboard
   - delete (se sterge scoreboard-ul anterior)
   - insert (se insereaza datele noi)
   - read (se afiseaza)
+    
 Runda
   - insert (cand incepe prima runda)
   - update (cand se schimba tipul rundei)
   - read (la fiecare runda se afiseaza numele)
   - delete (la finalul jocului este sters din baza de date)
+    
 Optiuni
   - insert (cand alege o optiune din meniu)
   - delete (cand isi sterge contul, se sterg si optiunile inregistrate)
