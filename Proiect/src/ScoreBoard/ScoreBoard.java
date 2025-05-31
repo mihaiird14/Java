@@ -1,53 +1,61 @@
 package ScoreBoard;
 
-
-import Optiuni.*;
-import Player.*;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import Optiuni.Optiuni;
+import Player.PlayerHuman;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
+import Log.*;
 import java.util.List;
-
-public class ScoreBoard{
+import DB.*;
+public class ScoreBoard {
     private static ScoreBoard scoreBoard;
     private List<PlayerHuman> jucatori;
-    private ScoreBoard(){
-        jucatori=new ArrayList<>();
-    };
-    public static ScoreBoard getScoreBoard(){
-        if(scoreBoard==null){
-            scoreBoard=new ScoreBoard();
+
+    private ScoreBoard() {
+        jucatori = new ArrayList<>();
+    }
+
+    public static ScoreBoard getScoreBoard() {
+        if (scoreBoard == null) {
+            scoreBoard = new ScoreBoard();
         }
         return scoreBoard;
     }
+
     public void Clasament(PlayerHuman player) {
-        List<PlayerHuman> jucatori = new ArrayList<>();
-        try {
-            Path path = Paths.get("useri.txt");
-            List<String> conturi = Files.readAllLines(path);
-            for(String i : conturi){
-                String[] valori = i.split(" ");
-                jucatori.add(new PlayerHuman(valori[0], valori[1], Integer.parseInt(valori[2])));
+        try (Connection conn = DB.getInstance()) {
+
+            try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM scoreboard")) {
+                deleteStmt.executeUpdate();
+                Log.getInstance().logAction("SCOREBOARD      DELETE");
             }
-            Collections.sort(jucatori); //
-            System.out.println("\n\n\n------------CLASAMENT----------------\n");
-            int nr=0;
-            for(PlayerHuman i : jucatori){
-                System.out.println(i);
-                nr++;
-                if(nr==25){
-                    break;
+
+            try (PreparedStatement insertStmt = conn.prepareStatement(
+                    "INSERT INTO scoreboard (username, scor) SELECT username, scor FROM jucatori")) {
+                insertStmt.executeUpdate();
+                Log.getInstance().logAction("SCOARBOARD     INSERT");
+            }
+
+            try (PreparedStatement selectStmt = conn.prepareStatement(
+                    "SELECT username, scor FROM scoreboard ORDER BY scor DESC LIMIT 25");
+                 ResultSet rs = selectStmt.executeQuery()) {
+                Log.getInstance().logAction("SCOAREBOARD      READ");
+                System.out.println("\n\n\n------------CLASAMENT----------------\n");
+                int poz = 1;
+                while (rs.next()) {
+                    String username = rs.getString("username");
+                    int scor = rs.getInt("scor");
+                    System.out.println(poz + ". " + username + " - " + scor + " puncte");
+                    poz++;
                 }
             }
+
             System.out.println("\n\n---OPTIUNI---");
-            Optiuni optiuni=Optiuni.getOptiuni();
+            Optiuni optiuni = Optiuni.getOptiuni();
             optiuni.afisOptiuni(player);
-        } catch(Exception e){
-            e.printStackTrace();
+
+        } catch (SQLException e) {
+            System.out.println("Eroare la generarea clasamentului: " + e.getMessage());
         }
     }
-
 }

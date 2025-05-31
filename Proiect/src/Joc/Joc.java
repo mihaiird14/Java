@@ -1,11 +1,14 @@
 package Joc;
 import ClasamentJoc.ClasamentJoc;
+import Log.Log;
 import Player.*;
 import Carte.*;
 import Runda.*;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import DB.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,101 +86,109 @@ public class Joc{
         pachetCarti.add(new Carte("CARO","J",11));
         pachetCarti.add(new Carte("CARO","Q",12));
         pachetCarti.add(new Carte("CARO","K",13));
-        
+
     }
 
-    public void startJoc(PlayerHuman player){
+    public void startJoc(PlayerHuman player) {
         jucatori.add(new Player("Bot1"));
         jucatori.add(new Player("Bot2"));
         jucatori.add(new Player("Bot3"));
         jucatori.add(player);
         setPachetCarti();
-        runde=List.of(new RundaLevate(),new RundaCupe(),new RundaDame(),new RundaPopa(),new RundaWhist(),new RundaTotale());
-        for(int i=0;i<6;i++){
-            runde.get(i).startRunda(jucatori,pachetCarti,scoruriJoc);
-            if(i<5) {
-                System.out.println("Scoruri dupa runda " + (i + 1) + ": ");
-                System.out.println(jucatori.get(0).getUsername() + " " + scoruriJoc.get(0) + " puncte");
-                System.out.println(jucatori.get(1).getUsername() + " " + scoruriJoc.get(1) + " puncte");
-                System.out.println(jucatori.get(2).getUsername() + " " + scoruriJoc.get(2) + " puncte");
-                System.out.println(jucatori.get(3).getUsername() + " " + scoruriJoc.get(3) + " puncte");
-            }
-            else{
-                System.out.println("Clasament final ");
-                List<ClasamentJoc>cls=new ArrayList<>();
-                cls.add(new ClasamentJoc(jucatori.get(0),scoruriJoc.get(0)));
-                cls.add(new ClasamentJoc(jucatori.get(1),scoruriJoc.get(1)));
-                cls.add(new ClasamentJoc(jucatori.get(2),scoruriJoc.get(2)));
-                cls.add(new ClasamentJoc(jucatori.get(3),scoruriJoc.get(3)));
-                Collections.sort(cls, new Comparator<ClasamentJoc>() {
-                    @Override
-                    public int compare(ClasamentJoc o1, ClasamentJoc o2) {
-                        return Integer.compare(o2.getScor(), o1.getScor());
+
+        runde = List.of(
+                new RundaLevate(), new RundaCupe(), new RundaDame(),
+                new RundaPopa(), new RundaWhist(), new RundaTotale()
+        );
+
+        try (Connection conn = DB.getInstance()) {
+            String insertSQL = "INSERT INTO runda (tiprunda) VALUES (?)";
+            String updateSQL = "UPDATE runda SET tiprunda = ?";
+            String readSQL = "SELECT tiprunda FROM runda";
+            String deleteSQL = "DELETE FROM runda";
+
+            PreparedStatement insertStmt = conn.prepareStatement(insertSQL);
+            PreparedStatement updateStmt = conn.prepareStatement(updateSQL);
+            PreparedStatement readStmt = conn.prepareStatement(readSQL);
+            PreparedStatement deleteStmt = conn.prepareStatement(deleteSQL);
+
+            for (int i = 0; i < runde.size(); i++) {
+                String numeRunda = runde.get(i).getClass().getSimpleName();
+
+                if (i == 0) {
+                    insertStmt.setString(1, numeRunda);
+                    insertStmt.executeUpdate();
+                    Log.getInstance().logAction("RUNDA      INSERT:     tiprunda = " + numeRunda);
+                } else {
+                    updateStmt.setString(1, numeRunda);
+                    updateStmt.executeUpdate();
+                    Log.getInstance().logAction("RUNDA      UPDATE:     tiprunda = " + numeRunda);
+                }
+
+                ResultSet rs = readStmt.executeQuery();
+                if (rs.next()) {
+                    System.out.println("\n=== RUNDA CURENTĂ: " + rs.getString("tiprunda") + " ===\n");
+                    Log.getInstance().logAction("RUNDA      READ:       tiprunda = " + rs.getString("tiprunda"));
+                }
+
+                runde.get(i).startRunda(jucatori, pachetCarti, scoruriJoc);
+
+                if (i < 5) {
+                    System.out.println("Scoruri după runda " + (i + 1) + ": ");
+                    for (int j = 0; j < 4; j++) {
+                        System.out.println(jucatori.get(j).getUsername() + " " + scoruriJoc.get(j) + " puncte");
                     }
-                });
-                int loc=1;
-                for(ClasamentJoc c:cls){
-                    if(c.getPlayer() instanceof PlayerHuman){
-                        System.out.print("Locul "+loc+ ": "+ c.getPlayer().getUsername()+" ");
-                        switch(loc){
-                            case 1:
-                                System.out.print(((PlayerHuman) c.getPlayer()).getHighscore()+" -> ");
-                                ((PlayerHuman) c.getPlayer()).setHighscore(50);
-                                System.out.println(((PlayerHuman) c.getPlayer()).getHighscore());
-                                break;
-                            case 2:
-                                System.out.print(((PlayerHuman) c.getPlayer()).getHighscore()+" -> ");
-                                ((PlayerHuman) c.getPlayer()).setHighscore(10);
-                                System.out.println(((PlayerHuman) c.getPlayer()).getHighscore());
-                                break;
-                            case 3:
-                                System.out.print(((PlayerHuman) c.getPlayer()).getHighscore()+" -> ");
-                                ((PlayerHuman) c.getPlayer()).setHighscore(0);
-                                System.out.println(((PlayerHuman) c.getPlayer()).getHighscore());
-                                break;
-                            case 4:
-                                if(((PlayerHuman) c.getPlayer()).getHighscore()>=500){
-                                    System.out.print(((PlayerHuman) c.getPlayer()).getHighscore()+" -> ");
-                                    ((PlayerHuman) c.getPlayer()).setHighscore(-20);
-                                    System.out.println(((PlayerHuman) c.getPlayer()).getHighscore());
-                                }
-                                else{
-                                    if(((PlayerHuman) c.getPlayer()).getHighscore()-10>=0){
-                                        System.out.print(((PlayerHuman) c.getPlayer()).getHighscore()+" -> ");
-                                        ((PlayerHuman) c.getPlayer()).setHighscore(-10);
-                                        System.out.println(((PlayerHuman) c.getPlayer()).getHighscore());
+                } else {
+                    System.out.println("Clasament final");
+                    List<ClasamentJoc> cls = new ArrayList<>();
+                    for (int j = 0; j < 4; j++) {
+                        cls.add(new ClasamentJoc(jucatori.get(j), scoruriJoc.get(j)));
+                    }
+
+                    Collections.sort(cls, Comparator.comparingInt(ClasamentJoc::getScor).reversed());
+
+                    int loc = 1;
+                    for (ClasamentJoc c : cls) {
+                        if (c.getPlayer() instanceof PlayerHuman) {
+                            System.out.print("Locul " + loc + ": " + c.getPlayer().getUsername() + " ");
+                            PlayerHuman ph = (PlayerHuman) c.getPlayer();
+                            int scorVechi = ph.getHighscore();
+                            switch (loc) {
+                                case 1: ph.setHighscore(50); break;
+                                case 2: ph.setHighscore(10); break;
+                                case 3: ph.setHighscore(0); break;
+                                case 4:
+                                    if (ph.getHighscore() >= 500) {
+                                        ph.setHighscore(-20);
+                                    } else if (ph.getHighscore() - 10 >= 0) {
+                                        ph.setHighscore(-10);
                                     }
-                                }
-                                break;
-                        }
-                        try{
-                            List<String> conturi = Files.readAllLines(Paths.get("useri.txt"));
-                            List<String> linii=new ArrayList<>();
-                            for(String cont:conturi){
-                                String[] elemente=cont.split(" ");
-                                if(c.getPlayer().getUsername().equals(elemente[0])){
-                                      linii.add(elemente[0]+" "+elemente[1]+" "+((PlayerHuman) c.getPlayer()).getHighscore());
-                                }
-                                else{
-                                    linii.add(elemente[0]+" "+elemente[1]+" "+elemente[2]);
-                                }
+                                    break;
                             }
-                            try{
-                                Files.write(Paths.get("useri.txt"),linii);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
+                            System.out.println(scorVechi + " -> " + ph.getHighscore());
+
+                            try (PreparedStatement stmt = conn.prepareStatement(
+                                    "UPDATE jucatori SET scor = ? WHERE username = ?")) {
+                                stmt.setInt(1, ph.getHighscore());
+                                stmt.setString(2, ph.getUsername());
+                                stmt.executeUpdate();
+                                Log.getInstance().logAction("PLAYER     UPDATE");
+                            } catch (SQLException e) {
+                                System.out.println("Eroare la update scor: " + e.getMessage());
                             }
+                        } else {
+                            System.out.println("Locul " + loc + ": " + c.getPlayer().getUsername());
                         }
-                        catch (Exception e){
-                            System.out.println("Eroare!");
-                        }
+                        loc++;
                     }
-                    else{
-                        System.out.println("Locul "+loc+ ": "+ c.getPlayer().getUsername());
-                    }
-                    loc++;
+
+                    deleteStmt.executeUpdate();
+                    Log.getInstance().logAction("RUNDA      DELETE");
                 }
             }
+        } catch (SQLException e) {
+            System.out.println("Eroare în gestionarea rundelor: " + e.getMessage());
         }
     }
+
 }

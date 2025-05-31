@@ -1,8 +1,14 @@
 package Optiuni;
+import Meniu.Meniu;
 import Player.*;
 import ScoreBoard.*;
 import Joc.*;
 import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import Log.*;
+import DB.*;
 
 public class Optiuni{
     private static Optiuni optiuni;
@@ -17,30 +23,56 @@ public class Optiuni{
         System.out.println("1. Start Joc");
         System.out.println("2. Regulament");
         System.out.println("3. Score Board");
+        System.out.println("4. Șterge Cont");
         Scanner scanner=new Scanner(System.in);
         System.out.print("Introduceti optiunea:");
-        try{
-            int opt=scanner.nextInt();
-            while(opt<1 || opt>3){
-                opt=scanner.nextInt();
+        try {
+            int opt = scanner.nextInt();
+            while (opt < 1 || opt > 4) {
+                opt = scanner.nextInt();
             }
-            switch(opt){
+            String selectieText = switch (opt) {
+                case 1 -> "Start Joc";
+                case 2 -> "Regulament";
+                case 3 -> "Score Board";
+                case 4 -> "Sterge Cont";
+                default -> "Necunoscut";
+            };
+
+            try (Connection conn = DB.getInstance();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "INSERT INTO optiuni (username, selectie) VALUES (?, ?)")) {
+                stmt.setString(1, player.getUsername());
+                stmt.setString(2, selectieText);
+                stmt.executeUpdate();
+                Log.getInstance().logAction("OPTIUNI     INSERT     ");
+            } catch (SQLException e) {
+                System.out.println("Eroare la inserarea opțiunii în BD: " + e.getMessage());
+            }
+
+            switch (opt) {
                 case 1:
-                    Joc joc=new Joc();
+                    Joc joc = new Joc();
                     joc.startJoc(player);
                     break;
                 case 2:
                     this.Regulament(player);
                     break;
                 case 3:
-                    ScoreBoard scoreBoard=ScoreBoard.getScoreBoard();
+                    ScoreBoard scoreBoard = ScoreBoard.getScoreBoard();
                     scoreBoard.Clasament(player);
                     break;
+                case 4:
+                    Meniu meniu = Meniu.getMeniu();
+                    meniu.stergeCont(player.getUsername());
+                    meniu.start();
+                    break;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.print(e);
             this.afisOptiuni(player);
         }
+
 
     }
     public void Regulament(PlayerHuman player){
