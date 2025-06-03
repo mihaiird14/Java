@@ -81,7 +81,7 @@ public class Main {
         final int K = 10;
 
         final String url = "jdbc:postgresql://localhost:5432/ex3";
-        final String user = "user";
+        final String user = "root";
         final String password = "parola";
 
         SimpleConnectionPool pool = null;
